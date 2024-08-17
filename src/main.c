@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rbutzke <rbutzke@student.42so.org.br>      +#+  +:+       +#+        */
+/*   By: myokogaw <myokogaw@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/25 07:48:30 by rbutzke           #+#    #+#             */
-/*   Updated: 2024/08/17 17:41:10 by rbutzke          ###   ########.fr       */
+/*   Updated: 2024/08/17 19:25:09 by myokogaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,7 +32,7 @@ int main(int argc, char **argv)
 	draw_plaine(data);
 	ray_casting(data);
 
-/* 
+
 	uint32_t h, w;
 	uint32_t color;
 	w = data->window.wall[NORTH]->width;
@@ -41,7 +41,7 @@ int main(int argc, char **argv)
 	{
 		color = ((uint32_t*)data->window.wall[NORTH]->pixels)[i];
 		mlx_put_pixel(data->window.player, i % w, i / h, color);
-	} */
+	}
 	mlx_image_to_window(data->window.mlx, data->window.image, 0, 0);
 	// mlx_image_to_window(data->window.mlx, data->window.player, 0, 0);
 	mlx_loop_hook(data->window.mlx, ft_hook, (void*)data);

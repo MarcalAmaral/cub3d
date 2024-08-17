@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ray_casting.c                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rbutzke <rbutzke@student.42so.org.br>      +#+  +:+       +#+        */
+/*   By: myokogaw <myokogaw@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/11 14:16:46 by rbutzke           #+#    #+#             */
-/*   Updated: 2024/08/17 17:50:08 by rbutzke          ###   ########.fr       */
+/*   Updated: 2024/08/17 20:14:35 by myokogaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,10 +18,12 @@
 #include <MLX42.h>
 #include "utils.h"
 #include <stdlib.h>
+#include <math.h>
 
+static void defineTexture(t_data *data, t_dda *dda, t_ray *ray);
 static void	init(t_ray *ray, t_data *data);
-static int defineColor(t_data *data, t_dda *dda, t_ray *ray);
-static void draw(t_data *data, t_dda *dda, t_ray ray);
+// static int defineColor(t_data *data, t_dda *dda, t_ray *ray);
+// static void draw(t_data *data, t_dda *dda, t_ray ray);
 
 
 void	ray_casting(t_data *data)
@@ -41,7 +43,8 @@ void	ray_casting(t_data *data)
 		ray.draw_end = 	ray.line_height / 2 + HEIGHT / 2;
 		if (ray.draw_end >= HEIGHT)
 			ray.draw_end = HEIGHT -1;
-		draw(data, &dda, ray);
+		defineTexture(data, &dda, &ray);
+		// draw(data, &dda, ray);
 		ray.index++;
 	}
 }
@@ -54,60 +57,112 @@ static void	init(t_ray *ray, t_data *data)
 	ray->distance_wall = 0;
 }
 
-static int		defineColor(t_data *data, t_dda *dda, t_ray *ray)
-{
-	int allcolor[5];
-	int color;
-	int value;
+// static int		defineColor(t_data *data, t_dda *dda, t_ray *ray)
+// {
+// 	int allcolor[5];
+// 	int color;
+// 	int value;
 
-	allcolor[0] = ft_color(255, 0, 0, 255);
-	allcolor[1] = ft_color(0, 255, 0, 255);
-	allcolor[2] = ft_color(0, 0, 255, 255);
-	allcolor[3] = ft_color(0, 0, 0, 255);
-	allcolor[4] = ft_color(255, 255, 224, 255);
-	value = data->worldmap[dda->map[Y]][dda->map[Y]] - '0';
-	if (value == 1)
+// 	allcolor[0] = ft_color(255, 0, 0, 255);
+// 	allcolor[1] = ft_color(0, 255, 0, 255);
+// 	allcolor[2] = ft_color(0, 0, 255, 255);
+// 	allcolor[3] = ft_color(0, 0, 0, 255);
+// 	allcolor[4] = ft_color(255, 255, 224, 255);
+// 	value = data->worldmap[dda->map[Y]][dda->map[Y]] - '0';
+// 	if (value == 1)
+// 	{
+// 		if (ray->ray_dir[Y] < 0)
+// 			color = allcolor[0];
+// 		else if (ray->ray_dir[Y] > 0)
+// 			color = allcolor[1];
+// 		else if (ray->ray_dir[X] < 0)
+// 			color = allcolor[2];
+// 		else if (ray->ray_dir[X] > 0)
+// 			color = allcolor[3];
+// 	}
+// 	if (dda->side == 1)
+// 		color = color / 2;
+// 	return (color);
+// }
+
+// static void draw(t_data *data, t_dda *dda, t_ray ray)
+// {
+// 	int red = defineColor(data, dda, &ray);
+
+// 	while (ray.draw_start < ray.draw_end)
+// 	{
+// 		mlx_put_pixel(data->window.image, ray.index, ray.draw_start, red);
+// 		ray.draw_start++;
+// 	}
+// }
+
+#include "libft.h"
+
+uint32_t buffer[HEIGHT];
+
+void	draw_v_line(t_data *data, int col, int start, int end)
+{
+	int	row;
+
+	row = start;
+	while (row < end)
 	{
-		if (ray->ray_dir[Y] < 0)
-			color = allcolor[0];
-		else if (ray->ray_dir[Y] > 0)
-			color = allcolor[1];
-		else if (ray->ray_dir[X] < 0)
-			color = allcolor[2];
-		else if (ray->ray_dir[X] > 0)
-			color = allcolor[3];
+		mlx_put_pixel(data->window.image, col, row,
+			buffer[row]);
+		row++;
 	}
-	if (dda->side == 1)
-		color = color / 2;
-	return (color);
+	ft_bzero(buffer, HEIGHT);
 }
 
-static void draw(t_data *data, t_dda *dda, t_ray ray)
+static unsigned int	rearrange_color(unsigned int argb)
 {
-	int red = defineColor(data, dda, &ray);
+	unsigned int	blue;
+	unsigned int	green;
+	unsigned int	red;
+	unsigned int	alpha;
 
-	while (ray.draw_start < ray.draw_end)
-	{
-		mlx_put_pixel(data->window.image, ray.index, ray.draw_start, red);
-		ray.draw_start++;
-	}
+	blue = (argb & 0xFF) << 24;
+	green = (argb & 0xFF00) << 8;
+	red = (argb & 0xFF0000) >> 8;
+	alpha = (argb & 0xFF000000) >> 24;
+	return (blue | green | red | alpha);
 }
 
-static int		defineTexture(t_data *data, t_dda *dda, t_ray *ray)
+static void defineTexture(t_data *data, t_dda *dda, t_ray *ray)
 {
 	int value;
 
 	value = data->worldmap[dda->map[Y]][dda->map[Y]] - '0';
-	if (value == 1)
-	{
+	// if (value == 1)
+	// {
+
 		double wallX; //where exactly the wall was hit
-    	if(dda->side == 0) wallX = data->coord->pos[Y] + ray->distance_wall * ray->dir[Y];
-    	else          wallX = data->coord->pos[X] + ray->distance_wall * ray->dir[X];
+		wallX = data->coord->pos[X] + ray->distance_wall * ray->ray_dir[Y];
+    	if(dda->side == 0) wallX /= 2;
+   
 		wallX -= floor(wallX);
 		
 		int	texX = (int) (wallX * (double)data->window.wall[NORTH]->width);
-		if (dda->side == 0 && ray->dir[X] > 0) texX = data->window.wall[NORTH]->width - texX -1;
-		if (dda->side == 1 && ray->dir[Y] < 0) texX = data->window.wall[NORTH]->width - texX -1;
+		// if (dda->side == 0 && ray->ray_dir[X] > 0)
+		// 	texX = data->window.wall[NORTH]->width - texX - 1;
+		// if (dda->side == 1 && ray->ray_dir[Y] < 0)
+		// 	texX = data->window.wall[NORTH]->width - texX - 1;
+		texX = data->window.wall[NORTH]->width - texX - 1;
+		double step = (double) data->window.wall[NORTH]->height / ray->line_height;
+		
+		double texPos = (ray->draw_start - HEIGHT / 2 + ray->line_height / 2) * step;
+		for (int y = ray->draw_start; y < ray->draw_end; y++)
+		{
+			int texY = (int) texPos & (data->window.wall[NORTH]->height - 1);
+			texPos += step;
+			unsigned int color = *((unsigned int *)data->window.wall[NORTH]->pixels
+					+ (unsigned int)(texY * data->window.wall[NORTH]->width
+						+ texX));
+			unsigned int color_hex = rearrange_color(color);
+			// uint32_t color = ((uint32_t *)data->window.wall[NORTH]->pixels)[data->window.wall[NORTH]->height * texY + texX];
+			buffer[y] = color_hex;
+		}
+		draw_v_line(data, ray->index, ray->draw_start, ray->draw_end);
 		// if (ray->ray_dir[Y] < 0)
 		// else if (ray->ray_dir[Y] > 0)
 			
@@ -115,7 +170,6 @@ static int		defineTexture(t_data *data, t_dda *dda, t_ray *ray)
 			
 		// else if (ray->ray_dir[X] > 0)
 			
-	}
-
-	return ();
+	// }
+	return ;
 }

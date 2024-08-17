@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   parse.c                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rbutzke <rbutzke@student.42so.org.br>      +#+  +:+       +#+        */
+/*   By: myokogaw <myokogaw@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/11 11:49:50 by rbutzke           #+#    #+#             */
-/*   Updated: 2024/08/17 15:36:16 by rbutzke          ###   ########.fr       */
+/*   Updated: 2024/08/17 18:55:28 by myokogaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,6 +52,7 @@ static int init_data(t_data *data, char *file)
 	data->window.player = mlx_new_image(data->window.mlx, 400, 400);
 	data->window.wall[NORTH] = mlx_load_png("textures/eagle.png");
 	data->window.wall[SOUTH] = mlx_load_png("textures/bluestone.png");
+	printf("height texture south %d width texture south %d\n", data->window.wall[SOUTH]->height, data->window.wall[SOUTH]->width);
 	data->window.wall[WEST] = mlx_load_png("textures/bluestone.png");
 	data->window.wall[EAST] = mlx_load_png("textures/wood.png");
 	data->rgb_floor[0] = 0;
