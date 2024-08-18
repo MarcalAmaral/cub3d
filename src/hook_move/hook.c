@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   hook.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rbutzke <rbutzke@student.42so.org.br>      +#+  +:+       +#+        */
+/*   By: myokogaw <myokogaw@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/11 13:48:07 by rbutzke           #+#    #+#             */
-/*   Updated: 2024/08/17 15:35:59 by rbutzke          ###   ########.fr       */
+/*   Updated: 2024/08/18 16:14:17 by myokogaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,6 +60,26 @@ static void ctrl(int c, t_data *data)
 		if (data->worldmap[(int)data->coord->pos[Y]][(int)(data->coord->pos[X] + data->coord->dir[X] * MOVE_SPPED)] == '0')
 			data->coord->pos[X] += data->coord->dir[X] * MOVE_SPPED;
 	}
+	else if (c == MLX_KEY_A)
+	{
+		if (data->worldmap[(int) data->coord->pos[Y]][(int)(data->coord->pos[X] - data->coord->plane[X] * MOVE_SPPED)] == '0')
+		{
+			data->coord->pos[X] -= data->coord->plane[X] * MOVE_SPPED;
+		}
+		if (data->worldmap[(int) (data->coord->pos[Y] - data->coord->plane[Y] * MOVE_SPPED)][(int) data->coord->pos[X]] == '0')
+			data->coord->pos[Y] -= data->coord->plane[Y] * MOVE_SPPED;
+
+	}
+	else if (c == MLX_KEY_D)
+	{
+		if (data->worldmap[(int) data->coord->pos[Y]][(int)(data->coord->pos[X] + data->coord->plane[X] * MOVE_SPPED)] == '0')
+		{
+			data->coord->pos[X] += data->coord->plane[X] * MOVE_SPPED;
+		}
+		if (data->worldmap[(int) (data->coord->pos[Y] + data->coord->plane[Y] * MOVE_SPPED)][(int) data->coord->pos[X]] == '0')
+			data->coord->pos[Y] += data->coord->plane[Y] * MOVE_SPPED;
+
+	}
 	else if (c == MLX_KEY_S)
 	{
 		if (data->worldmap[(int)(data->coord->pos[Y] - data->coord->dir[Y] * MOVE_SPPED)][(int) (data->coord->pos[X])] == '0')
@@ -81,22 +101,9 @@ static void ctrl(int c, t_data *data)
 
 		dir = data->coord->dir[Y];
 		plane = data->coord->plane[Y];
-		double dir3 =  data->coord->dir[Y] * cos(-ROT_SPEED) - data->coord->dir[X] * sin (-ROT_SPEED);
-		double dir4 =  dir * sin (-ROT_SPEED) + data->coord->dir[X] * cos(-ROT_SPEED);
-		double plane3 = data->coord->plane[Y] * cos(-ROT_SPEED) - data->coord->plane[X] * sin (-ROT_SPEED);
-		double plane4 = plane * sin (-ROT_SPEED) + data->coord->plane[X] * cos(-ROT_SPEED);
-		printf("dir3 = %f dir4 = %f plane3 %f plane4 %f\n", dir3, dir4, plane3, plane4);
 		data->coord->dir[Y] = data->coord->dir[Y] * cos(-ROT_SPEED) - data->coord->dir[X] * sin (-ROT_SPEED);
 		data->coord->dir[X] = dir * sin (-ROT_SPEED) + data->coord->dir[X] * cos(-ROT_SPEED);
 		data->coord->plane[Y] = data->coord->plane[Y] * cos(-ROT_SPEED) - data->coord->plane[X] * sin (-ROT_SPEED);
 		data->coord->plane[X] = plane * sin (-ROT_SPEED) + data->coord->plane[X] * cos(-ROT_SPEED);
 	}
-	else if (c == MLX_KEY_UP)
-		printf("Aguardando desenvolvimento da tecla [UP]\n");
-	else if (c == MLX_KEY_DOWN)
-		printf("Aguardando desenvolvimento da tecla [DOWN]\n");
-	else if (c == MLX_KEY_LEFT)
-		printf("Aguardando desenvolvimento da tecla [<-]\n");	
-	else if (c == MLX_KEY_RIGHT)
-		printf("Aguardando desenvolvimento da tecla [->]\n");
 }

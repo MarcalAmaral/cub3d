@@ -6,10 +6,12 @@
 /*   By: myokogaw <myokogaw@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/11 14:16:46 by rbutzke           #+#    #+#             */
-/*   Updated: 2024/08/17 20:14:35 by myokogaw         ###   ########.fr       */
+/*   Updated: 2024/08/18 15:43:29 by myokogaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
+
+#include "libft.h"
 #include "data.h"
 #include "ray_casting.h"
 #include "dda.h"
@@ -96,8 +98,6 @@ static void	init(t_ray *ray, t_data *data)
 // 	}
 // }
 
-#include "libft.h"
-
 uint32_t buffer[HEIGHT];
 
 void	draw_v_line(t_data *data, int col, int start, int end)
@@ -128,40 +128,82 @@ static unsigned int	rearrange_color(unsigned int argb)
 	return (blue | green | red | alpha);
 }
 
+static void catch_texture(t_data *data, t_dda *dda, t_ray *ray, t_texture_index tex)
+{
+	double wallX; //where exactly the wall was hit
+    if(dda->side == NORTH || dda->side == SOUTH)
+		wallX = data->coord->pos[X] + ray->distance_wall * ray->ray_dir[X];
+	else
+		wallX = data->coord->pos[Y] + ray->distance_wall * ray->ray_dir[Y];
+	wallX -= floor(wallX);
+	
+	int	texX = (int) (wallX * (double)data->window.wall[tex]->width);
+	// if (dda->side == NORTH || dda->side == SOUTH)
+	// 	texX = data->window.wall[tex]->width - texX - 1;
+	// if (dda->side == EAST || dda->side == WEST)
+	// 	texX = data->window.wall[tex]->width - texX - 1;
+	// printf("WallX value: %f texX value: %d\n", wallX, texX);
+	double step = (double) data->window.wall[tex]->height / ray->line_height;
+	
+	double texPos = (ray->draw_start - HEIGHT / 2 + ray->line_height / 2) * step;
+	for (int y = ray->draw_start; y < ray->draw_end; y++)
+	{
+		int texY = (int) texPos & (data->window.wall[tex]->height - 1);
+		texPos += step;
+		unsigned int color = *((unsigned int *)data->window.wall[tex]->pixels
+				+ (unsigned int)(texY * data->window.wall[tex]->width
+					+ texX));
+		unsigned int color_hex = rearrange_color(color);
+		// uint32_t color = ((uint32_t *)data->window.wall[NORTH]->pixels)[data->window.wall[NORTH]->height * texY + texX];
+		buffer[y] = color_hex;
+	}
+}
+
 static void defineTexture(t_data *data, t_dda *dda, t_ray *ray)
 {
-	int value;
+	// int value;
 
-	value = data->worldmap[dda->map[Y]][dda->map[Y]] - '0';
-	// if (value == 1)
+	// value = data->worldmap[dda->map[Y]][dda->map[Y]] - '0';
+// if (value == 1)
 	// {
-
-		double wallX; //where exactly the wall was hit
-		wallX = data->coord->pos[X] + ray->distance_wall * ray->ray_dir[Y];
-    	if(dda->side == 0) wallX /= 2;
-   
-		wallX -= floor(wallX);
 		
-		int	texX = (int) (wallX * (double)data->window.wall[NORTH]->width);
-		// if (dda->side == 0 && ray->ray_dir[X] > 0)
-		// 	texX = data->window.wall[NORTH]->width - texX - 1;
-		// if (dda->side == 1 && ray->ray_dir[Y] < 0)
-		// 	texX = data->window.wall[NORTH]->width - texX - 1;
-		texX = data->window.wall[NORTH]->width - texX - 1;
-		double step = (double) data->window.wall[NORTH]->height / ray->line_height;
+		// double wallX; //where exactly the wall was hit
+    	// if(dda->side == 0)
+		// 	wallX = data->coord->pos[X] + ray->distance_wall * ray->ray_dir[X];
+		// else
+		// 	wallX = data->coord->pos[Y] + ray->distance_wall * ray->ray_dir[Y];
+		// wallX -= floor(wallX);
 		
-		double texPos = (ray->draw_start - HEIGHT / 2 + ray->line_height / 2) * step;
-		for (int y = ray->draw_start; y < ray->draw_end; y++)
-		{
-			int texY = (int) texPos & (data->window.wall[NORTH]->height - 1);
-			texPos += step;
-			unsigned int color = *((unsigned int *)data->window.wall[NORTH]->pixels
-					+ (unsigned int)(texY * data->window.wall[NORTH]->width
-						+ texX));
-			unsigned int color_hex = rearrange_color(color);
-			// uint32_t color = ((uint32_t *)data->window.wall[NORTH]->pixels)[data->window.wall[NORTH]->height * texY + texX];
-			buffer[y] = color_hex;
-		}
+		// int	texX = (int) (wallX * (double)data->window.wall[NORTH]->width);
+		// printf("WallX value: %f texX value: %d\n", wallX, texX);
+		// // if (dda->side == 0 && ray->ray_dir[X] > 0)
+		// // 	texX = data->window.wall[NORTH]->width - texX - 1;
+		// // if (dda->side == 1 && ray->ray_dir[Y] < 0)
+		// // 	texX = data->window.wall[NORTH]->width - texX - 1;
+		// // texX = data->window.wall[NORTH]->width - texX - 1;
+		// double step = (double) data->window.wall[NORTH]->height / ray->line_height;
+		
+		// double texPos = (ray->draw_start - HEIGHT / 2 + ray->line_height / 2) * step;
+		// for (int y = ray->draw_start; y < ray->draw_end; y++)
+		// {
+		// 	int texY = (int) texPos & (data->window.wall[NORTH]->height - 1);
+		// 	texPos += step;
+		// 	unsigned int color = *((unsigned int *)data->window.wall[NORTH]->pixels
+		// 			+ (unsigned int)(texY * data->window.wall[NORTH]->width
+		// 				+ texX));
+		// 	unsigned int color_hex = rearrange_color(color);
+		// 	// uint32_t color = ((uint32_t *)data->window.wall[NORTH]->pixels)[data->window.wall[NORTH]->height * texY + texX];
+		// 	buffer[y] = color_hex;
+		// }
+		// printf("current side: %d\n", dda->side);
+		if (dda->side == EAST)
+			catch_texture(data, dda, ray, EAST);
+		else if (dda->side == NORTH)
+			catch_texture(data, dda, ray, NORTH);
+		else if (dda->side == SOUTH)
+			catch_texture(data, dda, ray, SOUTH);
+		else if (dda->side == WEST)
+			catch_texture(data, dda, ray, WEST);
 		draw_v_line(data, ray->index, ray->draw_start, ray->draw_end);
 		// if (ray->ray_dir[Y] < 0)
 		// else if (ray->ray_dir[Y] > 0)
